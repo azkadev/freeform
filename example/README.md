@@ -1,4 +1,4 @@
-# freeform
+# example
 
 A new Flutter project.
 
