@@ -1,7 +1,5 @@
 // ignore_for_file: unused_local_variable, duplicate_ignore
 
-import 'dart:math';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -114,7 +112,9 @@ class _FreeFormState extends State<FreeForm> {
         ),
         child: InkWell(
           onLongPress: () {
-            print("oke");
+            if (kDebugMode) {
+              print("oke");
+            }
           },
           child: Container(
             decoration: const BoxDecoration(
@@ -130,6 +130,8 @@ class _FreeFormState extends State<FreeForm> {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -137,7 +139,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Scaffold(
+      home: const Scaffold(
         body: Demo(),
       ),
     );
@@ -145,6 +147,8 @@ class MyApp extends StatelessWidget {
 }
 
 class Demo extends StatefulWidget {
+  const Demo({Key? key}) : super(key: key);
+
   @override
   _DemoState createState() => _DemoState();
 }
@@ -155,14 +159,12 @@ class _DemoState extends State<Demo> {
     return ResizebleWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            child: Text(
-              '''I've just did simple prototype to show main idea.
+        children: const [
+          Text(
+            '''I've just did simple prototype to show main idea.
   1. Draw size handlers with container;
   2. Use GestureDetector to get new variables of sizes
   3. Refresh the main container size.''',
-            ),
           ),
         ],
       ),
@@ -171,7 +173,7 @@ class _DemoState extends State<Demo> {
 }
 
 class ResizebleWidget extends StatefulWidget {
-  ResizebleWidget({Key? key, required this.child});
+  const ResizebleWidget({Key? key, required this.child});
 
   final Widget child;
   @override
@@ -385,7 +387,7 @@ class _ResizebleWidgetState extends State<ResizebleWidget> {
 }
 
 class ManipulatingBall extends StatefulWidget {
-  ManipulatingBall({
+  const ManipulatingBall({
     Key? key,
     required this.onDrag,
     required this.cursor,
@@ -431,8 +433,7 @@ class _ManipulatingBallState extends State<ManipulatingBall> {
         child: Container(
           width: widget.width ?? ballDiameter,
           height: widget.height ?? ballDiameter,
-          decoration: BoxDecoration(
-            color: Colors.white,
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
           ),
         ),
@@ -442,12 +443,12 @@ class _ManipulatingBallState extends State<ManipulatingBall> {
 }
 
 class cManipulatingBall extends StatefulWidget {
-  cManipulatingBall({Key? key, required this.onDrag, required this.child});
+  const cManipulatingBall({Key? key, required this.onDrag, required this.child});
   final Widget child;
   final Function onDrag;
 
   @override
-  _cManipulatingBallState createState() => _cManipulatingBallState();
+  cManipulatingBallState createState() => _cManipulatingBallState();
 }
 
 class _cManipulatingBallState extends State<cManipulatingBall> {
