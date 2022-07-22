@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 
 class FreeForm extends StatefulWidget {
   const FreeForm({
@@ -129,23 +128,6 @@ class _FreeFormState extends State<FreeForm> {
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Text Overflow Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const Scaffold(
-        body: Demo(),
-      ),
-    );
-  }
-}
-
 class Demo extends StatefulWidget {
   const Demo({Key? key}) : super(key: key);
 
@@ -154,19 +136,26 @@ class Demo extends StatefulWidget {
 }
 
 class _DemoState extends State<Demo> {
+  late int count = 0;
   @override
   Widget build(BuildContext context) {
     return ResizebleWidget(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            '''I've just did simple prototype to show main idea.
-  1. Draw size handlers with container;
-  2. Use GestureDetector to get new variables of sizes
-  3. Refresh the main container size.''',
+      child: Scaffold(
+        body: Center(
+          child: Text(
+            "Count: ${count.toString()}",
           ),
-        ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              count++;
+            });
+          },
+          child: const Icon(
+            Icons.add,
+          ),
+        ),
       ),
     );
   }
@@ -183,12 +172,16 @@ class ResizebleWidget extends StatefulWidget {
 const ballDiameter = 10.0;
 
 class _ResizebleWidgetState extends State<ResizebleWidget> {
-  double height = 400;
-  double width = 200;
+  late double height = 400;
+  late double width = 200;
 
-  double top = 0;
-  double left = 0;
-  late SystemMouseCursor cursor = SystemMouseCursors.zoomIn; // <----
+  late double heightBackup = 0;
+  late double widthBackup = 0;
+  late bool isMaxiMize = false;
+  late double top = 0;
+  late double left = 0;
+  late double topBackup = 0;
+  late double leftBackup = 0;
 
   void onDrag(double dx, double dy) {
     var newHeight = height + dy;
@@ -202,186 +195,272 @@ class _ResizebleWidgetState extends State<ResizebleWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: top,
-          left: left,
-          child: Container(
-            height: height,
-            width: width,
-            color: Colors.red[100],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                cManipulatingBall(
-                  child: Container(
-                    height: 35,
-                    width: width,
-                    color: Colors.black,
-                  ),
-                  onDrag: (dx, dy) {
-                    setState(() {
-                      top = top + dy;
-                      left = left + dx;
-                    });
-                  },
+    return  Stack(
+        children: [
+          Positioned(
+            top: top,
+            left: left,
+            child: Container(
+              height: height,
+              width: width,
+              decoration: BoxDecoration(
+                color: Colors.red[200],
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(5),
                 ),
-                widget.child
-              ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  cManipulatingBall(
+                    child: Container(
+                      height: 35,
+                      width: width,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(6),
+                      child: Row(
+                        children: [
+                          const Spacer(),
+                          const Text(
+                            "Application",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: InkWell(
+                              onTap: () {
+                                return setState(() {
+                                  isMaxiMize = false;
+                                  height = 0;
+                                  width = 0;
+                                });
+                              },
+                              child: const Icon(
+                                Icons.minimize,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: InkWell(
+                              onTap: () {
+                                var getFullheight = MediaQuery.of(context).size.height;
+                                var getFullWidth = MediaQuery.of(context).size.width;
+                                if (getFullheight == height && getFullWidth == width) {
+                                  return setState(() {
+                                    isMaxiMize = false;
+                                    top = topBackup;
+                                    left = leftBackup;
+                                    height = heightBackup;
+                                    width = widthBackup;
+                                  });
+                                }
+                                setState(() {
+                                  isMaxiMize = true;
+                                  topBackup = top;
+                                  leftBackup = left;
+                                  top = 0;
+                                  left = 0;
+                                  heightBackup = height;
+                                  widthBackup = width;
+                                  height = MediaQuery.of(context).size.height;
+                                  width = MediaQuery.of(context).size.width;
+                                });
+                              },
+                              child: const Icon(
+                                Icons.maximize,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: InkWell(
+                              onTap: () {
+                                if (kDebugMode) {
+                                  print("oke");
+                                }
+                              },
+                              child: const Icon(
+                                Icons.close,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    onDrag: (dx, dy) {
+                      setState(() {
+                        top = top + dy;
+                        left = left + dx;
+                      });
+                    },
+                  ),
+                  Expanded(child: widget.child)
+                ],
+              ),
             ),
           ),
-        ),
-        // top left
-        Positioned(
-          top: top - ballDiameter / 2,
-          left: left - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeDownRight,
-            onDrag: (dx, dy) {
-              var mid = (dx + dy) / 2;
-              var newHeight = height - 2 * mid;
-              var newWidth = width - 2 * mid;
+          // top left
+          Positioned(
+            top: top - ballDiameter / 2,
+            left: left - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeDownRight,
+              onDrag: (dx, dy) {
+                var mid = (dx + dy) / 2;
+                var newHeight = height - 2 * mid;
+                var newWidth = width - 2 * mid;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-                width = newWidth > 0 ? newWidth : 0;
-                top = top + mid;
-                left = left + mid;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                  width = newWidth > 0 ? newWidth : 0;
+                  top = top + mid;
+                  left = left + mid;
+                });
+              },
+            ),
           ),
-        ),
-        // top middle
-        Positioned(
-          top: top - ballDiameter / 2,
-          left: left + width / 2 - width / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeDown,
-            width: width,
-            onDrag: (dx, dy) {
-              var newHeight = height - dy;
+          // top middle
+          Positioned(
+            top: top - ballDiameter / 2,
+            left: left + width / 2 - width / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeDown,
+              width: width,
+              onDrag: (dx, dy) {
+                var newHeight = height - dy;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-                top = top + dy;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                  top = top + dy;
+                });
+              },
+            ),
           ),
-        ),
-        // top right
-        Positioned(
-          top: top - ballDiameter / 2,
-          left: left + width - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeDownLeft,
-            onDrag: (dx, dy) {
-              var mid = (dx + (dy * -1)) / 2;
+          // top right
+          Positioned(
+            top: top - ballDiameter / 2,
+            left: left + width - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeDownLeft,
+              onDrag: (dx, dy) {
+                var mid = (dx + (dy * -1)) / 2;
 
-              var newHeight = height + 2 * mid;
-              var newWidth = width + 2 * mid;
+                var newHeight = height + 2 * mid;
+                var newWidth = width + 2 * mid;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-                width = newWidth > 0 ? newWidth : 0;
-                top = top - mid;
-                left = left - mid;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                  width = newWidth > 0 ? newWidth : 0;
+                  top = top - mid;
+                  left = left - mid;
+                });
+              },
+            ),
           ),
-        ),
-        // center right
-        Positioned(
-          top: top + height / 2 - height / 2,
-          left: left + width - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeLeft,
-            height: height,
-            onDrag: (dx, dy) {
-              var newWidth = width + dx;
+          // center right
+          Positioned(
+            top: top + height / 2 - height / 2,
+            left: left + width - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeLeft,
+              height: height,
+              onDrag: (dx, dy) {
+                var newWidth = width + dx;
 
-              setState(() {
-                width = newWidth > 0 ? newWidth : 0;
-              });
-            },
+                setState(() {
+                  width = newWidth > 0 ? newWidth : 0;
+                });
+              },
+            ),
           ),
-        ),
-        // bottom right
-        Positioned(
-          top: top + height - ballDiameter / 2,
-          left: left + width - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeUpLeft,
-            onDrag: (dx, dy) {
-              var mid = (dx + dy) / 2;
+          // bottom right
+          Positioned(
+            top: top + height - ballDiameter / 2,
+            left: left + width - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeUpLeft,
+              onDrag: (dx, dy) {
+                var mid = (dx + dy) / 2;
 
-              var newHeight = height + 2 * mid;
-              var newWidth = width + 2 * mid;
+                var newHeight = height + 2 * mid;
+                var newWidth = width + 2 * mid;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-                width = newWidth > 0 ? newWidth : 0;
-                top = top - mid;
-                left = left - mid;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                  width = newWidth > 0 ? newWidth : 0;
+                  top = top - mid;
+                  left = left - mid;
+                });
+              },
+            ),
           ),
-        ),
-        // bottom center
-        Positioned(
-          top: top + height - ballDiameter / 2,
-          left: left + width / 2 - width / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeUp,
-            width: width,
-            onDrag: (dx, dy) {
-              var newHeight = height + dy;
+          // bottom center
+          Positioned(
+            top: top + height - ballDiameter / 2,
+            left: left + width / 2 - width / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeUp,
+              width: width,
+              onDrag: (dx, dy) {
+                var newHeight = height + dy;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                });
+              },
+            ),
           ),
-        ),
-        // bottom left
-        Positioned(
-          top: top + height - ballDiameter / 2,
-          left: left - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeUpRight,
-            onDrag: (dx, dy) {
-              var mid = ((dx * -1) + dy) / 2;
+          // bottom left
+          Positioned(
+            top: top + height - ballDiameter / 2,
+            left: left - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeUpRight,
+              onDrag: (dx, dy) {
+                var mid = ((dx * -1) + dy) / 2;
 
-              var newHeight = height + 2 * mid;
-              var newWidth = width + 2 * mid;
+                var newHeight = height + 2 * mid;
+                var newWidth = width + 2 * mid;
 
-              setState(() {
-                height = newHeight > 0 ? newHeight : 0;
-                width = newWidth > 0 ? newWidth : 0;
-                top = top - mid;
-                left = left - mid;
-              });
-            },
+                setState(() {
+                  height = newHeight > 0 ? newHeight : 0;
+                  width = newWidth > 0 ? newWidth : 0;
+                  top = top - mid;
+                  left = left - mid;
+                });
+              },
+            ),
           ),
-        ),
-        //left center
-        Positioned(
-          top: top + height / 2 - height / 2,
-          left: left - ballDiameter / 2,
-          child: ManipulatingBall(
-            cursor: SystemMouseCursors.resizeRight,
-            height: height,
-            onDrag: (dx, dy) {
-              var newWidth = width - dx;
+          //left center
+          Positioned(
+            top: top + height / 2 - height / 2,
+            left: left - ballDiameter / 2,
+            child: ManipulatingBall(
+              cursor: SystemMouseCursors.resizeRight,
+              height: height,
+              onDrag: (dx, dy) {
+                var newWidth = width - dx;
 
-              setState(() {
-                width = newWidth > 0 ? newWidth : 0;
-                left = left + dx;
-              });
-            },
+                setState(() {
+                  width = newWidth > 0 ? newWidth : 0;
+                  left = left + dx;
+                });
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      
     );
   }
 }
@@ -448,10 +527,10 @@ class cManipulatingBall extends StatefulWidget {
   final Function onDrag;
 
   @override
-  cManipulatingBallState createState() => _cManipulatingBallState();
+  cManipulatingBallState createState() => cManipulatingBallState();
 }
 
-class _cManipulatingBallState extends State<cManipulatingBall> {
+class cManipulatingBallState extends State<cManipulatingBall> {
   late double initX;
   late double initY;
 
